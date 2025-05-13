@@ -19,22 +19,19 @@ class RADIO(torch.nn.Module):
         return_multilayer (bool): Return features from multiple layers.
     """
 
-    def __init__(
-        self,
-        version="radio_v2",
-        output="dense",
-        return_multilayer=False,
-    ):
+    def __init__(self, version="radio_v2", output="dense", return_multilayer=False):
         super().__init__()
 
         # Get model from TorchHub.
         self.version = version
         self.checkpoint_name = f"{version}"
-        radio = torch.hub.load('NVlabs/RADIO',
-                               'radio_model',
-                               version=self.version,
-                               progress=True,
-                               adaptor_names=None)
+        radio = torch.hub.load(
+            "NVlabs/RADIO",
+            "radio_model",
+            version=self.version,
+            progress=True,
+            adaptor_names=None,
+        )
         radio.make_preprocessor_external()
         self.radio = radio.eval().to(torch.float32)
 

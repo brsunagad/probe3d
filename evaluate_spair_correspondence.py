@@ -45,7 +45,7 @@ def compute_errors(model, instance, mask_feats=False, return_heatmaps=False):
     images = torch.stack((img_i, img_j)).cuda()
     masks = torch.stack((mask_i, mask_j)).cuda()
     masks = torch.nn.functional.avg_pool2d(masks.float(), 16)
-    masks = masks > 4 / (16**2)
+    masks = masks > 4 / (16 ** 2)
 
     feats = model(images)
     if isinstance(feats, list):
@@ -120,7 +120,7 @@ def evaluate_dataset(model, dataset, thresh, verbose=False):
 
 @hydra.main("./configs", "spair_correspondence", None)
 def main(cfg: DictConfig):
-    data_root = "/nfs/turbo/justincj-turbo/mbanani/projects/geoeval/data/SPair-71k"
+    data_root = "data/SPair-71k"
     thresh = 0.10
 
     # ===== Get model =====

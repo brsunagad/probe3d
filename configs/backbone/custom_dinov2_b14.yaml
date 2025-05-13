@@ -1,0 +1,6 @@
+_target_: evals.models.dino.DINO
+dino_name: dinov2
+model_name: vitb14
+output: dense-cls
+layer: -1
+teacher_checkpoint: /work/dlclarge2/sunagadb-runs/dinov2/outputs_b14/eval/training_124999/teacher_checkpoint.pth
