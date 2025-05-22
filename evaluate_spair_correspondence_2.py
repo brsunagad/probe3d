@@ -76,6 +76,57 @@ def visualize_matching(img_a, img_b, kps_a, kps_b, pred_kps, heatmaps, save_path
     img_b_np = to_numpy(img_b)
 
     H, W = img_a_np.shape[:2]
+    img_a_draw = (img_a_np.copy() * 255).astype(np.uint8)
+    img_b_draw = (img_b_np.copy() * 255).astype(np.uint8)
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    thickness = 1
+
+    for idx in range(len(kps_a)):
+        pt_a = (int(kps_a[idx, 0]), int(kps_a[idx, 1]))
+        pt_b_gt = (int(kps_b[idx, 0]), int(kps_b[idx, 1]))
+        pt_b_pred = (int(pred_kps[idx, 0] * W), int(pred_kps[idx, 1] * H))
+
+        text = str(idx)
+        (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+        offset = (text_width // 2, text_height // 2)
+
+        cv2.putText(img_a_draw, text, (pt_a[0] - offset[0], pt_a[1] + offset[1]), font, font_scale, (255, 0, 0), thickness, cv2.LINE_AA)
+        cv2.putText(img_b_draw, text, (pt_b_gt[0] - offset[0], pt_b_gt[1] + offset[1]), font, font_scale, (0, 255, 0), thickness, cv2.LINE_AA)
+        cv2.putText(img_b_draw, text, (pt_b_pred[0] - offset[0], pt_b_pred[1] + offset[1]), font, font_scale, (255, 0, 0), thickness, cv2.LINE_AA)
+
+    # Add white spacing between the two images
+    spacing = 20
+    canvas_height = max(img_a_draw.shape[0], img_b_draw.shape[0])
+    canvas_width = img_a_draw.shape[1] + img_b_draw.shape[1] + spacing
+    canvas = np.ones((canvas_height, canvas_width, 3), dtype=np.uint8) * 255
+
+    # Paste the images
+    canvas[:img_a_draw.shape[0], :img_a_draw.shape[1]] = img_a_draw
+    canvas[:img_b_draw.shape[0], img_a_draw.shape[1] + spacing:] = img_b_draw
+
+    # Convert BGR to RGB and normalize
+    # canvas_rgb = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+    canvas_rgb = canvas.astype(np.float32) / 255.0
+
+    plt.figure(figsize=(14, 7))
+    plt.imshow(canvas_rgb)
+    plt.title("Keypoint Matching: Image A (Left) and Image B (Right) with GT (Green), Pred (Red)")
+    plt.axis('off')
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', pad_inches=0.1)
+        plt.close()
+    else:
+        plt.show()
+        
+def visualize_matching_old(img_a, img_b, kps_a, kps_b, pred_kps, heatmaps, save_path=None):
+    img_a_np = to_numpy(img_a)
+    img_b_np = to_numpy(img_b)
+
+    H, W = img_a_np.shape[:2]
     img_a_draw = img_a_np.copy()
     img_b_draw = img_b_np.copy()
 

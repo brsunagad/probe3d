@@ -26,24 +26,24 @@ from PIL import Image
 from torchvision import transforms
 
 CLASS_IDS = {
-    # "aeroplane": 1,
-    # "bicycle": 2,
-    # "bird": 3,
-    # "boat": 4,
-    # "bottle": 5,
-    # "bus": 6,
+    "aeroplane": 1,
+    "bicycle": 2,
+    "bird": 3,
+    "boat": 4,
+    "bottle": 5,
+    "bus": 6,
     "car": 7,
     "cat": 8,
     "chair": 9,
     "cow": 10,
     "dog": 12,
     "horse": 13,
-    # "motorbike": 14,
-    # "person": 15,
-    # "pottedplant": 16,
-    # "sheep": 17,
-    # "train": 19,
-    # "tvmonitor": 20,
+    "motorbike": 14,
+    "person": 15,
+    "pottedplant": 16,
+    "sheep": 17,
+    "train": 19,
+    "tvmonitor": 20,
 }
 
 
