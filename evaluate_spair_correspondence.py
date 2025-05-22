@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from datetime import datetime
-
+import cv2
+import matplotlib.pyplot as plt
 import hydra
 import numpy as np
 import torch
@@ -35,6 +36,54 @@ from tqdm import tqdm
 
 from evals.datasets.spair import CLASS_IDS, SPairDataset
 from evals.utils.correspondence import argmax_2d
+
+from hydra.core.hydra_config import HydraConfig
+import os
+
+# ========== Helper ==========
+
+def to_numpy(img):
+    if isinstance(img, torch.Tensor):
+        img = img.detach().cpu().permute(1, 2, 0).numpy()
+    return np.clip(img, 0, 1)
+
+def visualize_matching(img_a, img_b, kps_a, kps_b, pred_kps, heatmaps, keypoint_idx=0, save_path=None):
+    img_a_np = to_numpy(img_a)
+    img_b_np = to_numpy(img_b)
+
+    H, W = img_a_np.shape[:2]
+    pt_a = (kps_a[keypoint_idx, 0] * W, kps_a[keypoint_idx, 1] * H)
+    pt_b_gt = (kps_b[keypoint_idx, 0] * W, kps_b[keypoint_idx, 1] * H)
+    pt_b_pred = (pred_kps[keypoint_idx, 0] * W, pred_kps[keypoint_idx, 1] * H)
+
+    img_a_draw = img_a_np.copy()
+    img_b_draw = img_b_np.copy()
+    cv2.circle(img_a_draw, (int(pt_a[0]), int(pt_a[1])), 5, (1, 0, 0), -1)
+    cv2.circle(img_b_draw, (int(pt_b_gt[0]), int(pt_b_gt[1])), 5, (0, 1, 0), -1)
+    cv2.circle(img_b_draw, (int(pt_b_pred[0]), int(pt_b_pred[1])), 5, (1, 0, 0), -1)
+
+    heatmap = heatmaps[keypoint_idx].cpu().numpy()
+    heatmap_resized = cv2.resize(heatmap, (W, H))
+    heatmap_colored = plt.cm.jet(heatmap_resized)[:, :, :3]
+    heatmap_overlay = (0.4 * heatmap_colored + 0.6 * img_b_np)
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    axes[0].imshow(img_a_draw)
+    axes[0].set_title("Image A with Keypoint")
+    axes[1].imshow(img_b_draw)
+    axes[1].set_title("Image B with GT (Green) and Pred (Red)")
+    axes[2].imshow(heatmap_overlay)
+    axes[2].set_title("Matching Heatmap on Image B")
+
+    for ax in axes:
+        ax.axis('off')
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+        plt.close()
+    else:
+        plt.show()
 
 
 def compute_errors(model, instance, mask_feats=False, return_heatmaps=False):
@@ -120,6 +169,11 @@ def evaluate_dataset(model, dataset, thresh, verbose=False):
 
 @hydra.main("./configs", "spair_correspondence", None)
 def main(cfg: DictConfig):
+    output_dir = HydraConfig.get().run.dir
+    print(f'Output dir: {output_dir}')
+    vis_dir = os.path.join(output_dir, "vis")
+    os.makedirs(vis_dir, exist_ok=True)
+    
     data_root = "data/SPair-71k"
     thresh = 0.10
 
