@@ -88,60 +88,6 @@ def main(cfg: DictConfig):
     err_2d = torch.stack(err_2d, dim=0).float()
     R_gt = torch.stack(R_gt, dim=0).float()
 
-    """
-    feats_0 = []
-    feats_1 = []
-    depth_0 = []
-    depth_1 = []
-    K_mat = []
-    Rt_gt = []
-
-    for batch in tqdm(loader):
-        feat_0 = model(batch["rgb_0"].cuda())
-        feat_1 = model(batch["rgb_1"].cuda())
-        if cfg.multilayer:
-            feat_0 = torch.cat(feat_0, dim=1)
-            feat_1 = torch.cat(feat_1, dim=1)
-        feats_0.append(feat_0.detach().cpu())
-        feats_1.append(feat_1.detach().cpu())
-        depth_0.append(batch["depth_0"])
-        depth_1.append(batch["depth_1"])
-        K_mat.append(batch["K"])
-        Rt_gt.append(batch["Rt_1"])
-
-    feats_0 = torch.cat(feats_0, dim=0)
-    feats_1 = torch.cat(feats_1, dim=0)
-    depth_0 = torch.cat(depth_0, dim=0)
-    depth_1 = torch.cat(depth_1, dim=0)
-    K_mat = torch.cat(K_mat, dim=0)
-    Rt_gt = torch.cat(Rt_gt, dim=0).float()[:, :3, :4]
-
-    depth_0 = nn_F.interpolate(depth_0, scale_factor=cfg.scale_factor)
-    depth_1 = nn_F.interpolate(depth_1, scale_factor=cfg.scale_factor)
-    K_mat[:, :2, :] *= cfg.scale_factor
-
-    err_2d = []
-    num_instances = len(loader.dataset)
-    for i in tqdm(range(num_instances)):
-        corr_xyz0, corr_xyz1, corr_dist = estimate_correspondence_depth(
-            feats_0[i],
-            feats_1[i],
-            depth_0[i],
-            depth_1[i],
-            K_mat[i].clone(),
-            cfg.num_corr,
-        )
-
-        corr_xyz0in1 = transform_points_Rt(corr_xyz0, Rt_gt[i].float())
-        uv_0in1 = project_3dto2d(corr_xyz0in1, K_mat[i].clone())
-        uv_1in1 = project_3dto2d(corr_xyz1, K_mat[i].clone())
-        corr_err2d = (uv_0in1 - uv_1in1).norm(p=2, dim=1)
-
-        err_2d.append(corr_err2d.detach().cpu())
-
-    err_2d = torch.stack(err_2d, dim=0).float()
-    """
-
     results = []
     # compute 2D errors
     px_thresh = [5, 10, 20]
